@@ -13,8 +13,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR/.."
 set -eo pipefail
 
-rm -rf tmp/step1-upfile/ tmp/step2-rkfw/ tmp/step3-rkafp/
-mkdir -p tmp/step1-upfile/ tmp/step2-rkfw/ tmp/step3-rkafp/
+rm -rf tmp/step1-upfile/ tmp/step2-rkfw/ tmp/step3-rkafp/ tmp/step4-rkboot/ tmp/step5-rsce/
+mkdir -p tmp/step1-upfile/ tmp/step2-rkfw/ tmp/step3-rkafp/ tmp/step4-rkboot/ tmp/step5-rsce/
 REPACKED_IMG="$PWD/tmp/repacked.bin"
 UPDATE_IMG="$PWD/tmp/step1-upfile/update.img"
 RK_ROM_IMG="$PWD/tmp/step2-rkfw/rom.img"
@@ -80,5 +80,44 @@ if cmp -s "$UPDATE_IMG" "$UPDATE_REPACKED"; then
     echo "Success: Update image repack is identical."
 else
     echo "Failure: Update image repack differs from original."
+    exit 1
+fi
+
+echo
+echo "Step 12: Unpack boot.img (FIT image)..."
+BOOT_IMG="$PWD/tmp/step3-rkafp/boot.img"
+apps/rk_rkboot_tool.sh unpack "$BOOT_IMG" tmp/step4-rkboot/
+echo
+
+echo "Step 13: Repack boot.img..."
+BOOT_REPACKED="$PWD/tmp/boot-repacked.img"
+apps/rk_rkboot_tool.sh pack tmp/step4-rkboot/ "$BOOT_REPACKED"
+echo
+
+echo "Step 14: Compare original and repacked boot.img..."
+if cmp -s "$BOOT_IMG" "$BOOT_REPACKED"; then
+    echo "Success: FIT image repack is identical."
+else
+    echo "Failure: FIT image repack differs from original."
+    exit 1
+fi
+
+echo
+echo "Step 15: Unpack resource.img (RSCE image)..."
+RESOURCE_IMG="$PWD/tmp/step4-rkboot/resource.img"
+mkdir -p tmp/step5-rsce/
+apps/rk_rsce_tool.py unpack "$RESOURCE_IMG" tmp/step5-rsce/
+echo
+
+echo "Step 16: Repack resource.img..."
+RESOURCE_REPACKED="$PWD/tmp/resource-repacked.img"
+apps/rk_rsce_tool.py pack tmp/step5-rsce/ "$RESOURCE_REPACKED"
+echo
+
+echo "Step 17: Compare original and repacked resource.img..."
+if cmp -s "$RESOURCE_IMG" "$RESOURCE_REPACKED"; then
+    echo "Success: RSCE image repack is identical."
+else
+    echo "Failure: RSCE image repack differs from original."
     exit 1
 fi

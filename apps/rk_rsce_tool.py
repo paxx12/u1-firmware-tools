@@ -37,12 +37,6 @@ def fix_path(path):
         return path[2:]
     return path
 
-def switch_int(x):
-    return struct.unpack('<I', struct.pack('>I', x))[0]
-
-def switch_short(x):
-    return struct.unpack('<H', struct.pack('>H', x))[0]
-
 class ResourcePtnHeader:
     def __init__(self):
         self.magic = RESOURCE_PTN_HDR_MAGIC
@@ -55,28 +49,28 @@ class ResourcePtnHeader:
 
     def pack(self):
         data = bytearray(BLOCK_SIZE)
-        struct.pack_into('<4sHHBBBI', data, 0,
+        struct.pack_into('<4sHHBBBxI', data, 0,
             self.magic,
-            switch_short(self.resource_ptn_version),
-            switch_short(self.index_tbl_version),
+            self.resource_ptn_version,
+            self.index_tbl_version,
             self.header_size,
             self.tbl_offset,
             self.tbl_entry_size,
-            switch_int(self.tbl_entry_num)
+            self.tbl_entry_num
         )
         return bytes(data)
 
     @staticmethod
     def unpack(data):
         hdr = ResourcePtnHeader()
-        vals = struct.unpack('<4sHHBBBI', data[:16])
+        vals = struct.unpack('<4sHHBBBxI', data[:16])
         hdr.magic = vals[0]
-        hdr.resource_ptn_version = switch_short(vals[1])
-        hdr.index_tbl_version = switch_short(vals[2])
+        hdr.resource_ptn_version = vals[1]
+        hdr.index_tbl_version = vals[2]
         hdr.header_size = vals[3]
         hdr.tbl_offset = vals[4]
         hdr.tbl_entry_size = vals[5]
-        hdr.tbl_entry_num = switch_int(vals[6])
+        hdr.tbl_entry_num = vals[6]
         return hdr
 
 class IndexTblEntry:
@@ -96,21 +90,22 @@ class IndexTblEntry:
             path_bytes,
             self.hash,
             self.hash_size,
-            switch_int(self.content_offset),
-            switch_int(self.content_size)
+            self.content_offset,
+            self.content_size
         )
         return bytes(data)
 
     @staticmethod
     def unpack(data):
         entry = IndexTblEntry()
-        vals = struct.unpack('<4s220s32sIII', data[:272])
+        fmt = '<4s220s32sIII'
+        vals = struct.unpack(fmt, data[:struct.calcsize(fmt)])
         entry.tag = vals[0]
         entry.path = vals[1].rstrip(b'\x00').decode('utf-8', errors='ignore')
         entry.hash = vals[2]
         entry.hash_size = vals[3]
-        entry.content_offset = switch_int(vals[4])
-        entry.content_size = switch_int(vals[5])
+        entry.content_offset = vals[4]
+        entry.content_size = vals[5]
         return entry
 
 def mkdirs(path):
@@ -147,6 +142,7 @@ def unpack_image(image_path, unpack_dir):
             print(f"index tbl:\n\toffset:{header.tbl_offset}\tentry size:{header.tbl_entry_size}\tentry num:{header.tbl_entry_num}")
 
             print("Dump Index table:")
+            entries = []
             for i in range(header.tbl_entry_num):
                 entry_data = fp.read(BLOCK_SIZE)
                 if len(entry_data) < BLOCK_SIZE:
@@ -160,7 +156,9 @@ def unpack_image(image_path, unpack_dir):
                     return -1
 
                 print(f"entry({i}):\n\tpath:{entry.path}\n\toffset:{entry.content_offset}\tsize:{entry.content_size}")
+                entries.append(entry)
 
+            for entry in entries:
                 out_path = os.path.join(unpack_dir, entry.path)
                 mkdirs(out_path)
 
@@ -228,6 +226,8 @@ def pack_image(image_path, file_list):
             else:
                 other_files.append(f)
 
+    dtb_files.sort()
+    other_files.sort()
     files = dtb_files + other_files
     file_num = len(files)
 
@@ -257,10 +257,16 @@ def pack_image(image_path, file_list):
                     LOGE(f"Failed to write file: {file_path}")
                     return -1
 
+                entry_hash = bytearray(hash_val.ljust(MAX_HASH_LEN, b'\x00'))
+                if len(hash_val) < MAX_HASH_LEN:
+                    entry_hash[len(hash_val)] = 0xff
+                    if len(hash_val) + 1 < MAX_HASH_LEN:
+                        entry_hash[len(hash_val) + 1] = 0x7f
+
                 entry = IndexTblEntry()
                 entry.content_offset = offset
                 entry.content_size = content_size
-                entry.hash = hash_val.ljust(MAX_HASH_LEN, b'\x00')
+                entry.hash = bytes(entry_hash)
                 entry.hash_size = len(hash_val)
 
                 path = file_path
