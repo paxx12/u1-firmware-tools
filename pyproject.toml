@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "u1-firmware-tools"
+name = "snapmaker-firmware-tools"
 version = "0.1.0"
 description = "Tools for creating and manipulating Snapmaker U1 firmware images"
 readme = "README.md"
@@ -19,10 +19,10 @@ dependencies = [
 requires-python = ">=3.6"
 
 [project.scripts]
-u1-sm-upfile = "u1_firmware_tools.sm_upfile:main"
-u1-rk-afptool = "u1_firmware_tools.rk_afptool:main"
-u1-rk-resource-image = "u1_firmware_tools.rk_resource_image:main"
-u1-rk-update-image = "u1_firmware_tools.rk_update_image:main"
+sm-upfile = "firmware_tools.sm_upfile:main"
+rk-afptool = "firmware_tools.rk_afptool:main"
+rk-resource-image = "firmware_tools.rk_resource_image:main"
+rk-update-image = "firmware_tools.rk_update_image:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

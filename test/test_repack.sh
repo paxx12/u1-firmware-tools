@@ -27,11 +27,11 @@ echo "Work directory: $PWD"
 echo
 
 echo "Step 1: Display firmware info..."
-python3 -m u1_firmware_tools.sm_upfile info "$FIRMWARE_IMG"
+python3 -m firmware_tools.sm_upfile info "$FIRMWARE_IMG"
 echo
 
 echo "Step 2: Unpack firmware..."
-python3 -m u1_firmware_tools.sm_upfile unpack "$FIRMWARE_IMG" tmp/step1-upfile/
+python3 -m firmware_tools.sm_upfile unpack "$FIRMWARE_IMG" tmp/step1-upfile/
 echo
 
 echo "Step 3: List unpacked files..."
@@ -39,7 +39,7 @@ ls -lh tmp/step1-upfile/
 echo
 
 echo "Step 4: Repack firmware..."
-python3 -m u1_firmware_tools.sm_upfile pack tmp/step1-upfile/ "$REPACKED_IMG"
+python3 -m firmware_tools.sm_upfile pack tmp/step1-upfile/ "$REPACKED_IMG"
 echo
 
 echo "Step 5: Compare original and repacked..."
@@ -52,15 +52,15 @@ fi
 
 echo
 echo "Step 6: Split update.img into loader/rom/meta..."
-python3 -m u1_firmware_tools.rk_update_image unpack "$UPDATE_IMG" tmp/step2-rkfw/
+python3 -m firmware_tools.rk_update_image unpack "$UPDATE_IMG" tmp/step2-rkfw/
 echo
 
 echo "Step 7: Unpack RKAFP image..."
-python3 -m u1_firmware_tools.rk_afptool unpack tmp/step2-rkfw/rom.img tmp/step3-rkafp/
+python3 -m firmware_tools.rk_afptool unpack tmp/step2-rkfw/rom.img tmp/step3-rkafp/
 echo
 
 echo "Step 8: Repack RKAFP image..."
-python3 -m u1_firmware_tools.rk_afptool pack tmp/step3-rkafp/ "$RK_ROM_REPACKED"
+python3 -m firmware_tools.rk_afptool pack tmp/step3-rkafp/ "$RK_ROM_REPACKED"
 echo
 
 echo "Step 9: Compare original and repacked RKAFP image..."
@@ -73,7 +73,7 @@ fi
 
 echo
 echo "Step 10: Rebuild update image..."
-python3 -m u1_firmware_tools.rk_update_image pack tmp/step2-rkfw/ "$UPDATE_REPACKED"
+python3 -m firmware_tools.rk_update_image pack tmp/step2-rkfw/ "$UPDATE_REPACKED"
 echo
 
 echo "Step 11: Compare original and rebuilt update image..."
