@@ -2,13 +2,13 @@
 
 Python tools for unpacking and repacking Snapmaker U1 firmware images based on Rockchip platform.
 
-## Requirements
+## Installation
 
 ```bash
-apt install -y python3-crcmod
+pip install .
 
-# or
-pip install crcmod
+# For development:
+pip install -e .
 ```
 
 ## Firmware Structure
@@ -33,71 +33,71 @@ firmware.bin (UPFILE)
 
 ## Tools
 
-### sm_upfile.py
+### u1-sm-upfile
 
 Snapmaker UPFILE container format. Contains SOC firmware and MCU binaries.
 
 ```bash
-apps/firmware-packing/sm_upfile.py info <firmware.bin>
-apps/firmware-packing/sm_upfile.py unpack <firmware.bin> <outdir>
-apps/firmware-packing/sm_upfile.py pack <indir> <firmware.bin>
+u1-sm-upfile info <firmware.bin>
+u1-sm-upfile unpack <firmware.bin> <outdir>
+u1-sm-upfile pack <indir> <firmware.bin>
 ```
 
-### rk_update_image.py
+### u1-rk-update-image
 
 Rockchip RKFW update image. Contains bootloader and RKAF ROM image.
 
 ```bash
-apps/firmware-packing/rk_update_image.py unpack <update.img> <outdir>
-apps/firmware-packing/rk_update_image.py pack <indir> <update.img>
+u1-rk-update-image unpack <update.img> <outdir>
+u1-rk-update-image pack <indir> <update.img>
 ```
 
-### rk_afptool.py
+### u1-rk-afptool
 
 Rockchip RKAF partition image. Contains firmware partitions (kernel, rootfs, etc).
 
 ```bash
-apps/firmware-packing/rk_afptool.py unpack <rom.img> <outdir>
-apps/firmware-packing/rk_afptool.py pack <indir> <rom.img>
+u1-rk-afptool unpack <rom.img> <outdir>
+u1-rk-afptool pack <indir> <rom.img>
 ```
 
-### rk_resource_image.py
+### u1-rk-resource-image
 
 Rockchip resource partition image. Contains device tree blobs and other resources.
 
 ```bash
-apps/firmware-packing/rk_resource_image.py unpack <resource.img> <outdir>
-apps/firmware-packing/rk_resource_image.py pack <indir> <resource.img>
+u1-rk-resource-image unpack <resource.img> <outdir>
+u1-rk-resource-image pack <indir> <resource.img>
 ```
 
 ## Example: Full Unpack/Repack Workflow
 
 ```bash
 # 1. Unpack UPFILE
-apps/firmware-packing/sm_upfile.py unpack firmware.bin upfile/
+u1-sm-upfile unpack firmware.bin upfile/
 
 # 2. Unpack RKFW (update.img)
-apps/firmware-packing/rk_update_image.py unpack upfile/update.img rkfw/
+u1-rk-update-image unpack upfile/update.img rkfw/
 
 # 3. Unpack RKAF (rom.img)
-apps/firmware-packing/rk_afptool.py unpack rkfw/rom.img rkaf/
+u1-rk-afptool unpack rkfw/rom.img rkaf/
 
 # 4. (Optional) Unpack resource.img
-apps/firmware-packing/rk_resource_image.py unpack rkaf/Image/resource.img resources/
+u1-rk-resource-image unpack rkaf/Image/resource.img resources/
 
 # --- Make modifications ---
 
 # 5. (Optional) Repack resource.img
-apps/firmware-packing/rk_resource_image.py pack resources/ rkaf/Image/resource.img
+u1-rk-resource-image pack resources/ rkaf/Image/resource.img
 
 # 6. Repack RKAF
-apps/firmware-packing/rk_afptool.py pack rkaf/ rkfw/rom.img
+u1-rk-afptool pack rkaf/ rkfw/rom.img
 
 # 7. Repack RKFW
-apps/firmware-packing/rk_update_image.py pack rkfw/ upfile/update.img
+u1-rk-update-image pack rkfw/ upfile/update.img
 
 # 8. Repack UPFILE
-apps/firmware-packing/sm_upfile.py pack upfile/ firmware-new.bin
+u1-sm-upfile pack upfile/ firmware-new.bin
 ```
 
 ## Testing
