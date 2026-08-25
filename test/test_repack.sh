@@ -1,4 +1,8 @@
 #!/bin/bash
+# SPDX-License-Identifier: MIT
+# SPDX-PackageHomePage: https://github.com/paxx12/u1-firmware-tools
+# SPDX-FileCopyrightText: Copyright (c) 2026 @paxx12
+
 set -e
 
 if [[ $# -lt 1 ]]; then

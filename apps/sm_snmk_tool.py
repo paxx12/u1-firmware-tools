@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
+# SPDX-PackageHomePage: https://github.com/paxx12/u1-firmware-tools
+# SPDX-FileCopyrightText: Copyright (c) 2026 @paxx12
+
 import sys
 import os
 import struct
